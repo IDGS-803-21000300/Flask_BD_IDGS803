@@ -6,17 +6,72 @@ from flask_wtf.csrf import CSRFProtect
 
 from config import DevelopmentConfig
 from models import db
+from models import Alumnos
 
 app = Flask (__name__)
 # app.secret_key = 'quiere que le ponga musica pa que baile hasta abajo la bebe'
 app.config.from_object(DevelopmentConfig)
 csrf = CSRFProtect()
 
-@app.route("/")
+@app.route("/index", methods = ["GET", "POST"])
 def index():
-    escuela = "LA RONCHA"
-    alumnos = ["Kevin", "Eduardo", "Messi", "Rels B"]
-    return render_template("index.html", escuela = escuela, alumnos = alumnos)
+    alum_form = forms.UsersForm2(request.form)
+
+    if request.method == "POST" and alum_form.validate():
+         alum = Alumnos(nombre = alum_form.nombre.data,
+                        apaterno = alum_form.aPaterno.data,
+                        email = alum_form.email.data)
+         db.session.add(alum)
+         db.session.commit()
+         alum_form = Alumnos.query.all()
+         return render_template('ABC_Completo.html', form = alum_form)
+    
+    return render_template('index.html', form = alum_form)
+
+@app.route("/abc_completo", methods = ["GET", "POST"])
+def alum():
+     alum_form = Alumnos.query.all()
+     return render_template('ABC_Completo.html', form = alum_form)
+
+@app.route("/eliminar", methods = ["GET", "POST"])
+def eliminar():
+    alum_form = forms.UsersForm2(request.form)
+    if request.method == 'GET':
+        id = request.args.get('id')
+        alum1 = db.session.query(Alumnos).filter(Alumnos.id == id).first()
+        alum_form.id.data = request.args.get('id')
+        alum_form.nombre.data = alum1.nombre
+        alum_form.aPaterno.data = alum1.apaterno
+        alum_form.email.data = alum1.email              
+    if request.method == 'POST':
+        id = alum_form.id.data
+        alum = Alumnos.query.get(id)
+        db.session.delete(alum)
+        db.session.commit()
+        return redirect('ABC_Completo')
+    return render_template('eliminar.html', form = alum_form)
+    
+
+@app.route("/modificar")
+def modificar():
+    alum_form = forms.UsersForm2(request.form)
+    if request.method == 'GET':
+        id = request.args.get('id')
+        alum1 = db.session.query(Alumnos).filter(Alumnos.id == id).first()
+        alum_form.id.data = request.args.get('id')
+        alum_form.nombre.data = alum1.nombre
+        alum_form.aPaterno.data = alum1.aPaterno
+        alum_form.email.data = alum1.email              
+    if request.method == 'POST':
+        id = alum_form.id.data
+        alum1 = db.session.query(Alumnos).filter(Alumnos.id == id).first()
+        alum1.nombre = alum_form.nombre.data
+        alum1.apaterno = alum_form.apaterno.data
+        alum1.email = alum_form.email.data
+        db.session.add(alum1)
+        db.session.commit()
+        return redirect('ABC_Completo')
+    return redirect('modificar.html', form = alum_form)
 
 #FLASH......
 
@@ -47,8 +102,6 @@ def alumnos():
     apa = ''
     ama = ''
     alum_form = forms.UsersForm(request.form)
-
-    # alum_form = forms.UsersForm(request.form)
 
     if request.method == "POST" and alum_form.validate():
             print('Hola {}'.format(g.nombre))

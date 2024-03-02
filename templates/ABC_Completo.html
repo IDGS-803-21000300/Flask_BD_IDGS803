@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>APATERNO</th>
+                <th>EMAIL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%for f in form%}
+            <tr>
+                <td>{{f.nombre}}</td>
+                <td>{{f.aPaterno}}</td>
+                <td>{{f.email}}</td>
+    
+                <td><a href="eliminar?id={{f.id}}" class="btn btn-danger">Eliminar</a></td>
+                <td><a href="modificar?id={{f.id}}" class="btn btn-danger">Modificar</a></td>
+    
+            </tr>
+            {%endfor%}
+        </tbody>
+    </table>
+</body>
+</html>
